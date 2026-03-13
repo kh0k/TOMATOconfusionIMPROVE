@@ -61,6 +61,13 @@
             border: 2px dashed #4f1787;
             text-align: center;
             margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section.dragover {
+            background: #e3f2fd;
+            border-color: #180161;
+            transform: scale(1.02);
         }
         
         .file-input {
@@ -286,9 +293,9 @@
         </header>
         
         <div class="main-content">
-            <div class="upload-section">
+            <div class="upload-section" id="uploadSection">
                 <h2>上传多张图片进行批量处理</h2>
-                <p>支持JPG, PNG, BMP, WEBP等常见图片格式</p>
+                <p>支持点击选择或拖拽图片到此处上传</p>
                 <label class="normal_button upload-btn">
                     选择图片
                     <input type="file" id="fileInput" class="file-input" accept="image/*" multiple>
@@ -458,6 +465,7 @@
 
         // DOM元素引用
         const fileInput = document.getElementById('fileInput');
+        const uploadSection = document.getElementById('uploadSection');
         const encryptBtn = document.getElementById('encryptBtn');
         const decryptBtn = document.getElementById('decryptBtn');
         const downloadBtn = document.getElementById('downloadBtn');
@@ -471,53 +479,80 @@
         let processedImages = [];
         let isProcessing = false;
         
-        // 文件选择事件
-        fileInput.addEventListener('change', function(e) {
+        // 处理文件选择
+        function handleFiles(files) {
             if (isProcessing) {
                 alert('请等待当前处理完成后再上传新图片');
                 return;
             }
             
-            if (e.target.files.length > 0) {
-                selectedFiles.textContent = `已选择 ${e.target.files.length} 个文件`;
-                encryptBtn.disabled = false;
-                decryptBtn.disabled = false;
-                
-                // 清空之前的图片
-                uploadedImages = [];
-                processedImages = [];
-                imageGrid.innerHTML = '';
-                
-                // 处理每个文件
-                Array.from(e.target.files).forEach((file, index) => {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const img = new Image();
-                        img.onload = function() {
-                            uploadedImages.push({
-                                index: index,
-                                name: file.name,
-                                originalUrl: URL.createObjectURL(file),
-                                image: img,
-                                width: img.width,
-                                height: img.height
-                            });
-                            
-                            // 添加到预览网格
-                            const imageItem = document.createElement('div');
-                            imageItem.className = 'image-item';
-                            imageItem.innerHTML = `
-                                <img class="image-preview" src="${URL.createObjectURL(file)}" alt="${file.name}">
-                                <div class="image-name">${file.name}</div>
-                                <div class="image-status" data-index="${index}">等待处理</div>
-                            `;
-                            imageGrid.appendChild(imageItem);
-                        };
-                        img.src = e.target.result;
+            const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+            
+            if (imageFiles.length === 0) return;
+            
+            selectedFiles.textContent = `已选择 ${imageFiles.length} 个文件`;
+            encryptBtn.disabled = false;
+            decryptBtn.disabled = false;
+            
+            // 清空之前的图片
+            uploadedImages = [];
+            processedImages = [];
+            imageGrid.innerHTML = '';
+            
+            // 处理每个文件
+            imageFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        uploadedImages.push({
+                            index: index,
+                            name: file.name,
+                            originalUrl: URL.createObjectURL(file),
+                            image: img,
+                            width: img.width,
+                            height: img.height
+                        });
+                        
+                        // 添加到预览网格
+                        const imageItem = document.createElement('div');
+                        imageItem.className = 'image-item';
+                        imageItem.innerHTML = `
+                            <img class="image-preview" src="${URL.createObjectURL(file)}" alt="${file.name}">
+                            <div class="image-name">${file.name}</div>
+                            <div class="image-status" data-index="${index}">等待处理</div>
+                        `;
+                        imageGrid.appendChild(imageItem);
                     };
-                    reader.readAsDataURL(file);
-                });
-            }
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // 文件选择事件
+        fileInput.addEventListener('change', function(e) {
+            handleFiles(e.target.files);
+        });
+        
+        // 拖拽事件
+        uploadSection.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.add('dragover');
+        });
+        
+        uploadSection.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('dragover');
+        });
+        
+        uploadSection.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
         });
         
         // 批量处理函数
