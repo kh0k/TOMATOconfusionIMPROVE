@@ -52,6 +52,7 @@
         
         .main-content {
             padding: 30px;
+            padding-block-end: 0px;
         }
         
         .upload-section {
@@ -206,7 +207,8 @@
         
         .info-box {
             background: #e3f2fd;
-            padding: 20px;
+            padding-top: 15px;
+            padding-left: 10px;
             border-radius: 10px;
             border-left: 4px solid #4f1787;
             margin-top: 25px;
@@ -217,6 +219,28 @@
             margin-bottom: 15px;
             color: #180161;
             text-align: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .info-title::before {
+            content: '▼ ';
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        
+        .info-title.collapsed::before {
+            transform: rotate(-90deg);
+        }
+        
+        .info-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            max-height: 1000px;
+        }
+        
+        .info-content.collapsed {
+            max-height: 0;
         }
         
         .info-list {
@@ -298,9 +322,9 @@
             </div>
             
             <div class="process-buttons">
-                <button id="encryptBtn" class="normal_button encrypt-btn" disabled>批量混淆图片</button>
-                <button id="decryptBtn" class="normal_button decrypt-btn" disabled>批量解混淆图片</button>
-                <button id="downloadBtn" class="normal_button download-btn" disabled>下载所有图片</button>
+                <button id="encryptBtn" class="normal_button encrypt-btn" disabled>批量混淆</button>
+                <button id="decryptBtn" class="normal_button decrypt-btn" disabled>批量解混淆</button>
+                <button id="downloadBtn" class="normal_button download-btn" disabled>下载所有</button>
             </div>
             
             <div class="progress-container">
@@ -316,16 +340,18 @@
             </div>
             
             <div class="info-box">
-                <div class="info-title">工具功能说明</div>
-                <ul class="info-list">
-                    <li>使用完全相同的希尔伯特曲线算法，确保结果与原版一致</li>
-                    <li>保持像素的空间相关性，压缩后仍能保持色彩</li>
-                    <li>批量处理多张图片，支持同时混淆或解混淆</li>
-                    <li>处理后的图片格式为JPEG，质量1</li>
-                    <li>可视化处理进度和实时预览</li>
-                    <li>一键下载所有处理后的图片</li>
-                </ul>
-                <p style="text-align: center; margin-top: 15px;">使用说明：上传图片后选择"批量混淆图片"或"批量解混淆图片"，处理完成后可以查看每张图片的效果，最后点击"下载所有图片"保存结果。</p>
+                <div class="info-title collapsed" id="infoTitle">工具功能说明</div>
+                <div class="info-content collapsed" id="infoContent">
+                    <ul class="info-list">
+                        <li>使用完全相同的希尔伯特曲线算法，确保结果与原版一致</li>
+                        <li>保持像素的空间相关性，压缩后仍能保持色彩</li>
+                        <li>批量处理多张图片，支持同时混淆或解混淆</li>
+                        <li>处理后的图片格式为JPEG，质量1</li>
+                        <li>可视化处理进度和实时预览</li>
+                        <li>一键下载所有处理后的图片</li>
+                    </ul>
+                    <p style="text-align: center; margin-top: 15px;">使用说明：上传图片后选择"批量混淆图片"或"批量解混淆图片"，处理完成后可以查看每张图片的效果，最后点击"下载所有图片"保存结果。</p>
+                </div>
             </div>
         </div>
         
@@ -467,6 +493,8 @@
         const progressFill = document.getElementById('progressFill');
         const progressText = document.getElementById('progressText');
         const imageGrid = document.getElementById('imageGrid');
+        const infoTitle = document.getElementById('infoTitle');
+        const infoContent = document.getElementById('infoContent');
         
         // 存储上传的图片和处理结果
         let uploadedImages = [];
@@ -547,6 +575,12 @@
             e.stopPropagation();
             this.classList.remove('dragover');
             handleFiles(e.dataTransfer.files);
+        });
+        
+        // 折叠功能
+        infoTitle.addEventListener('click', function() {
+            this.classList.toggle('collapsed');
+            infoContent.classList.toggle('collapsed');
         });
         
         // 批量处理函数
