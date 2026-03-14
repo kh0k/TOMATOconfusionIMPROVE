@@ -376,6 +376,7 @@
 		
 		}
 	</style>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 	<div class="container">
@@ -712,48 +713,94 @@
 		encryptBtn.addEventListener('click', () => batchProcess('encrypt'));
 		decryptBtn.addEventListener('click', () => batchProcess('decrypt'));
 
-		// 所有另存为按钮（使用 File System Access API）
+		// 所有另存为按钮：支持 API 则选文件夹保存，否则打包为 ZIP 下载
 		saveAsBtn.addEventListener('click', async function() {
-		    if (processedImages.length === 0) return;
-		    
-		    // 尝试选择保存目录
-		    let directoryHandle;
-		    try {
-			directoryHandle = await window.showDirectoryPicker();
-		    } catch (err) {
-			// 用户取消选择
-			return;
-		    }
-		    
-		    for (let i = 0; i < processedImages.length; i++) {
-			const imageData = processedImages[i];
-			
-			try {
-			    const response = await fetch(imageData.processedUrl);
-			    const blob = await response.blob();
-			    
-			    // 在选中的目录中创建文件
-			    const fileHandle = await directoryHandle.getFileHandle(
-				`${imageData.name.replace(/\.[^/.]+$/, "")}_${imageData.index + 1}.jpg`,
-				{ create: true }
-			    );
-			    
-			    const writable = await fileHandle.createWritable();
-			    await writable.write(blob);
-			    await writable.close();
-			    
-			    const statusElement = document.querySelector(`.image-status[data-index="${imageData.index}"]`);
-			    statusElement.textContent = '已保存';
-			    statusElement.style.color = '#3498db';
-			    
-			} catch (error) {
-			    console.error(`保存图片 ${imageData.name} 时出错:`, error);
-			    const statusElement = document.querySelector(`.image-status[data-index="${imageData.index}"]`);
-			    statusElement.textContent = '保存失败';
-			    statusElement.style.color = '#e74c3c';
-			}
-		    }
-		});
+			    if (processedImages.length === 0) return;
+
+			    // 情况1：支持 File System Access API → 选择文件夹保存
+			    if (window.showDirectoryPicker) {
+				            let directoryHandle;
+				            try {
+						                directoryHandle = await window.showDirectoryPicker();
+						            } catch (err) {
+								                return; // 用户取消选择
+								            }
+
+				            // 逐个保存到选定文件夹
+				            for (let i = 0; i < processedImages.length; i++) {
+						                const imageData = processedImages[i];
+						                try {
+									                const response = await fetch(imageData.processedUrl);
+									                const blob = await response.blob();
+
+									                const fileHandle = await directoryHandle.getFileHandle(
+												                    `${imageData.name.replace(/\.[^/.]+$/, "")}_${imageData.index + 1}.jpg`,
+												                    { create: true }
+												                );
+									                const writable = await fileHandle.createWritable();
+									                await writable.write(blob);
+									                await writable.close();
+
+									                const statusEl = document.querySelector(`.image-status[data-index="${imageData.index}"]`);
+									                statusEl.textContent = '已保存';
+									                statusEl.style.color = '#3498db';
+									            } catch (error) {
+											                    console.error(`保存图片 ${imageData.name} 失败:`, error);
+											                    const statusEl = document.querySelector(`.image-status[data-index="${imageData.index}"]`);
+											                    statusEl.textContent = '保存失败';
+											                    statusEl.style.color = '#e74c3c';
+											                }
+						            }
+				            return;
+				        }
+
+			    // 情况2：不支持 API → 打包为 ZIP 下载
+			    const zip = new JSZip();
+			    const folder = zip.folder('混淆图片');
+			    const results = [];
+
+			    // 更新状态为“准备打包”
+			    processedImages.forEach(img => {
+				            const statusEl = document.querySelector(`.image-status[data-index="${img.index}"]`);
+				            if (statusEl) {
+						                statusEl.textContent = '准备打包';
+						                statusEl.style.color = '#f39c12';
+						            }
+				        });
+
+			    // 并发获取所有图片并添加到 ZIP
+			    await Promise.all(processedImages.map(async (imgData) => {
+				            try {
+						                const response = await fetch(imgData.processedUrl);
+						                const blob = await response.blob();
+						                const fileName = `${imgData.name.replace(/\.[^/.]+$/, "")}_${imgData.index + 1}.jpg`;
+						                folder.file(fileName, blob);
+						                results.push({ success: true, index: imgData.index });
+						            } catch (error) {
+								                console.error(`获取图片 ${imgData.name} 失败:`, error);
+								                results.push({ success: false, index: imgData.index });
+								            }
+				        }));
+
+			    // 生成 ZIP 并下载
+			    const zipBlob = await zip.generateAsync({ type: 'blob' });
+			    const link = document.createElement('a');
+			    link.href = URL.createObjectURL(zipBlob);
+			    link.download = `混淆图片_${new Date().getTime()}.zip`;
+			    document.body.appendChild(link);
+			    link.click();
+			    document.body.removeChild(link);
+			    URL.revokeObjectURL(link.href);
+
+			    // 更新每张图片的状态
+			    results.forEach(result => {
+				            const statusEl = document.querySelector(`.image-status[data-index="${result.index}"]`);
+				            if (statusEl) {
+						                statusEl.textContent = result.success ? '已保存' : '保存失败';
+						                statusEl.style.color = result.success ? '#3498db' : '#e74c3c';
+						            }
+				        });
+			    });
 
 		// 下载所有图片
 		downloadBtn.addEventListener('click', async function() {
