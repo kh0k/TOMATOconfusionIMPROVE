@@ -303,6 +303,27 @@
 		}
 		}
 		
+		/* 预览模态框 */
+		#previewModal {
+			    display: none;
+			        position: fixed;
+				    top: 0;
+				        left: 0;
+					    width: 100%;
+					        height: 100%;
+						    background: rgba(0,0,0,0.9);
+						        z-index: 1000;
+							    text-align: center;
+		}
+		
+		#previewModal img {
+			    max-width: 90%;
+			        max-height: 90%;
+				    margin-top: 5%;
+				        border-radius: 8px;
+					    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+		}
+		
 		@media (prefers-color-scheme: light) {
 		    body {
 		        background: #fff;
@@ -422,6 +443,11 @@
 		<footer>
 			<p>© 2026 批量小番茄混淆 | 基于希尔伯特曲线算法</p>
 		</footer>
+	</div>
+	<!-- 图片预览模态框 -->
+	<div id="previewModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; text-align:center;">
+		<span id="closeModal" style="position:absolute; top:20px; right:30px; color:white; font-size:30px; cursor:pointer;">&times;</span>
+		<img id="modalImage" style="max-width:90%; max-height:90%; margin-top:5%;">
 	</div>
 	<script>
 		function gilbert2d(width, height) {
@@ -852,6 +878,51 @@
 		        // 添加一点延迟，避免同时发起太多下载请求
 		        await new Promise(resolve => setTimeout(resolve, 100));
 		    }
+		});
+		
+		// 预览大图功能
+		const modal = document.getElementById('previewModal');
+		const modalImg = document.getElementById('modalImage');
+		const closeModal = document.getElementById('closeModal');
+		
+		// 点击 image-item 区域显示大图 - 使用事件委托
+		document.addEventListener('click', function(e) {
+			    const item = e.target.closest('.image-item');
+			    if (!item) return;
+			    
+			    const preview = item.querySelector('.image-preview');
+			    if (!preview) return;
+			    
+			    e.preventDefault();
+			    e.stopPropagation();
+			    modalImg.src = preview.src;
+			    modal.style.display = 'block';
+			    document.body.style.overflow = 'hidden';
+		});
+		
+		// 点击关闭按钮隐藏
+		closeModal.addEventListener('click', function() {
+			    modal.style.display = 'none';
+			    modalImg.src = '';
+			    document.body.style.overflow = '';
+		});
+		
+		// 点击模态框背景也关闭
+		modal.addEventListener('click', function(e) {
+			    if (e.target === modal) {
+				            modal.style.display = 'none';
+				            modalImg.src = '';
+				            document.body.style.overflow = '';
+				        }
+		});
+		
+		// ESC键关闭
+		document.addEventListener('keydown', function(e) {
+			    if (e.key === 'Escape' && modal.style.display === 'block') {
+				            modal.style.display = 'none';
+				            modalImg.src = '';
+				            document.body.style.overflow = '';
+				        }
 		});
 	</script>
 </body>
