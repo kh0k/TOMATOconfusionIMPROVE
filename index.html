@@ -99,6 +99,11 @@
 		    transform: translateY(0);
 		}
 		
+		.saveas-btn {
+		    background: #3c8bfb;
+		    color: #fff;
+		}
+		
 		.upload-btn {
 		    background: #180161;
 		    color: #fff;
@@ -371,6 +376,7 @@
 		
 		}
 	</style>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 	<div class="container">
@@ -385,6 +391,7 @@
 			<div class="process-buttons">
 				<button id="encryptBtn" class="normal_button encrypt-btn" disabled>批量混淆</button>
 				<button id="decryptBtn" class="normal_button decrypt-btn" disabled>批量解混淆</button>
+				<button id="saveAsBtn" class="normal_button download-btn" disabled>所有另存为</button>
 				<button id="downloadBtn" class="normal_button download-btn" disabled>下载所有</button>
 			</div>
 			<div class="progress-container">
@@ -548,11 +555,13 @@
 		const imageGrid = document.getElementById('imageGrid');
 		const infoTitle = document.getElementById('infoTitle');
 		const infoContent = document.getElementById('infoContent');
+		const saveAsBtn = document.getElementById('saveAsBtn');
 		
 		// 存储上传的图片和处理结果
 		let uploadedImages = [];
 		let processedImages = [];
 		let isProcessing = false;
+		saveAsBtn.disabled = false;
 		
 		// 处理文件选择
 		function handleFiles(files) {
@@ -643,6 +652,7 @@
 		    encryptBtn.disabled = true;
 		    decryptBtn.disabled = true;
 		    downloadBtn.disabled = true;
+		    saveAsBtn.disabled = true;
 		    
 		    processedImages = [];
 		    const total = uploadedImages.length;
@@ -696,11 +706,116 @@
 		    
 		    isProcessing = false;
 		    downloadBtn.disabled = false;
+		    saveAsBtn.disabled = false;
 		}
 		
 		// 按钮事件
 		encryptBtn.addEventListener('click', () => batchProcess('encrypt'));
 		decryptBtn.addEventListener('click', () => batchProcess('decrypt'));
+		
+		// 所有另存为按钮：支持 API 则选文件夹保存，否则打包为 ZIP 另存为
+		saveAsBtn.addEventListener('click', async function() {
+			    if (processedImages.length === 0) return;
+		
+			    // 情况1：支持 File System Access API → 选择文件夹保存
+			    if (window.showDirectoryPicker) {
+				            let directoryHandle;
+				            try {
+						                directoryHandle = await window.showDirectoryPicker();
+						            } catch (err) {
+								                return; // 用户取消选择
+								            }
+		
+				            // 逐个保存到选定文件夹
+				            for (let i = 0; i < processedImages.length; i++) {
+						                const imageData = processedImages[i];
+						                try {
+									                const response = await fetch(imageData.processedUrl);
+									                const blob = await response.blob();
+		
+									                const fileHandle = await directoryHandle.getFileHandle(
+												                    `${imageData.name.replace(/\.[^/.]+$/, "")}_${imageData.index + 1}.jpg`,
+												                    { create: true }
+												                );
+									                const writable = await fileHandle.createWritable();
+									                await writable.write(blob);
+									                await writable.close();
+		
+									                const statusEl = document.querySelector(`.image-status[data-index="${imageData.index}"]`);
+									                statusEl.textContent = '已保存';
+									                statusEl.style.color = '#3498db';
+									            } catch (error) {
+											                    console.error(`保存图片 ${imageData.name} 失败:`, error);
+											                    const statusEl = document.querySelector(`.image-status[data-index="${imageData.index}"]`);
+											                    statusEl.textContent = '保存失败';
+											                    statusEl.style.color = '#e74c3c';
+											                }
+						            }
+				            return;
+				        }
+		
+			    // 情况2：不支持 API → 打包为 ZIP 并使用另存为选择路径
+			    const zip = new JSZip();
+			    const folder = zip.folder('混淆图片');
+		
+			    // 并发获取所有图片并添加到 ZIP
+			    await Promise.all(processedImages.map(async (imgData) => {
+				            try {
+						                const response = await fetch(imgData.processedUrl);
+						                const blob = await response.blob();
+						                const fileName = `${imgData.name.replace(/\.[^/.]+$/, "")}_${imgData.index + 1}.jpg`;
+						                folder.file(fileName, blob);
+						            } catch (error) {
+								                console.error(`获取图片 ${imgData.name} 失败:`, error);
+								            }
+				        }));
+		
+			    // 生成 ZIP
+			    const zipBlob = await zip.generateAsync({ type: 'blob' });
+		
+			    // 使用 File System Access API 的 showSaveFilePicker 选择保存路径
+			    if (window.showSaveFilePicker) {
+				            try {
+						                const handle = await window.showSaveFilePicker({
+									                suggestedName: `混淆图片_${new Date().getTime()}.zip`,
+									                types: [{
+												                    description: 'ZIP 文件',
+												                    accept: { 'application/zip': ['.zip'] }
+												                }]
+									            });
+						                const writable = await handle.createWritable();
+						                await writable.write(zipBlob);
+						                await writable.close();
+						                
+						                // 更新所有状态为已保存
+						                processedImages.forEach(img => {
+									                const statusEl = document.querySelector(`.image-status[data-index="${img.index}"]`);
+									                if (statusEl) {
+												                    statusEl.textContent = '已保存';
+												                    statusEl.style.color = '#3498db';
+												                }
+									            });
+						            } catch (err) {
+								                // 用户取消，回退到普通下载
+								                const link = document.createElement('a');
+								                link.href = URL.createObjectURL(zipBlob);
+								                link.download = `混淆图片_${new Date().getTime()}.zip`;
+								                document.body.appendChild(link);
+								                link.click();
+								                document.body.removeChild(link);
+								                URL.revokeObjectURL(link.href);
+								            }
+				        } else {
+						        // 完全不支持 API，普通下载
+						        const link = document.createElement('a');
+						        link.href = URL.createObjectURL(zipBlob);
+						        link.download = `混淆图片_${new Date().getTime()}.zip`;
+						        document.body.appendChild(link);
+						        link.click();
+						        document.body.removeChild(link);
+						        URL.revokeObjectURL(link.href);
+						    }
+		});
 		
 		// 下载所有图片
 		downloadBtn.addEventListener('click', async function() {
