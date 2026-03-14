@@ -98,7 +98,12 @@
 		.normal_button:active {
 		    transform: translateY(0);
 		}
-		
+
+		.saveas-btn {
+		    background: #3c8bfb;
+		    color: #fff;
+		}
+
 		.upload-btn {
 		    background: #180161;
 		    color: #fff;
@@ -385,6 +390,7 @@
 			<div class="process-buttons">
 				<button id="encryptBtn" class="normal_button encrypt-btn" disabled>批量混淆</button>
 				<button id="decryptBtn" class="normal_button decrypt-btn" disabled>批量解混淆</button>
+				<button id="saveAsBtn" class="normal_button download-btn" disabled>所有另存为</button>
 				<button id="downloadBtn" class="normal_button download-btn" disabled>下载所有</button>
 			</div>
 			<div class="progress-container">
@@ -548,11 +554,13 @@
 		const imageGrid = document.getElementById('imageGrid');
 		const infoTitle = document.getElementById('infoTitle');
 		const infoContent = document.getElementById('infoContent');
+		const saveAsBtn = document.getElementById('saveAsBtn');
 		
 		// 存储上传的图片和处理结果
 		let uploadedImages = [];
 		let processedImages = [];
 		let isProcessing = false;
+		saveAsBtn.disabled = false;
 		
 		// 处理文件选择
 		function handleFiles(files) {
@@ -643,6 +651,7 @@
 		    encryptBtn.disabled = true;
 		    decryptBtn.disabled = true;
 		    downloadBtn.disabled = true;
+		    saveAsBtn.disabled = true;
 		    
 		    processedImages = [];
 		    const total = uploadedImages.length;
@@ -701,7 +710,50 @@
 		// 按钮事件
 		encryptBtn.addEventListener('click', () => batchProcess('encrypt'));
 		decryptBtn.addEventListener('click', () => batchProcess('decrypt'));
-		
+
+		// 所有另存为按钮（使用 File System Access API）
+		saveAsBtn.addEventListener('click', async function() {
+		    if (processedImages.length === 0) return;
+		    
+		    // 尝试选择保存目录
+		    let directoryHandle;
+		    try {
+			directoryHandle = await window.showDirectoryPicker();
+		    } catch (err) {
+			// 用户取消选择
+			return;
+		    }
+		    
+		    for (let i = 0; i < processedImages.length; i++) {
+			const imageData = processedImages[i];
+			
+			try {
+			    const response = await fetch(imageData.processedUrl);
+			    const blob = await response.blob();
+			    
+			    // 在选中的目录中创建文件
+			    const fileHandle = await directoryHandle.getFileHandle(
+				`${imageData.name.replace(/\.[^/.]+$/, "")}_${imageData.index + 1}.jpg`,
+				{ create: true }
+			    );
+			    
+			    const writable = await fileHandle.createWritable();
+			    await writable.write(blob);
+			    await writable.close();
+			    
+			    const statusElement = document.querySelector(`.image-status[data-index="${imageData.index}"]`);
+			    statusElement.textContent = '已保存';
+			    statusElement.style.color = '#3498db';
+			    
+			} catch (error) {
+			    console.error(`保存图片 ${imageData.name} 时出错:`, error);
+			    const statusElement = document.querySelector(`.image-status[data-index="${imageData.index}"]`);
+			    statusElement.textContent = '保存失败';
+			    statusElement.style.color = '#e74c3c';
+			}
+		    }
+		});
+
 		// 下载所有图片
 		downloadBtn.addEventListener('click', async function() {
 		    if (processedImages.length === 0) return;
