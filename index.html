@@ -49,7 +49,7 @@
         footer{text-align:center;padding:20px;background:#2a3a3a;color:#fff;margin-top:25px}
         .loading-spinner{display:inline-block;width:20px;height:20px;border:3px solid rgba(255,255,255,0.3);border-radius:50%;border-top-color:#fff;animation:spin 1s ease-in-out infinite;margin-right:10px}
         @keyframes spin{to{transform:rotate(360deg)}}
-        @media (max-width:768px){.upload-section .upload-btn{display:block;width:fit-content;margin-left:auto;margin-right:auto}}
+        @media (max-width:768px){.upload-section .upload-btn{display:block;width:fit-content;margin-left:auto;margin-right:auto}.swichbutton {top: 90%;}}
         #previewModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:1000;text-align:center}
         #previewModal img{max-width:90%;max-height:90%;margin-top:5%;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5)}
         #prevImage,#nextImage{opacity:0.1}
@@ -254,7 +254,7 @@
     infoTitle.onclick=()=>{infoTitle.classList.toggle("collapsed"); infoContent.classList.toggle("collapsed");};
 
     // ==================== 大图预览 ====================
-    let curIdx=-1, touchX=0;
+    let curIdx=-1;
     const getPreviews=()=>Array.from(document.querySelectorAll(".image-preview"));
     const updModal=i=>{let imgs=getPreviews(); if(!imgs.length)return; if(i<0)i=imgs.length-1; if(i>=imgs.length)i=0; curIdx=i; modalImg.src=imgs[curIdx].src;};
     const prev=()=>updModal(curIdx-1);
@@ -262,11 +262,8 @@
     document.addEventListener("click",e=>{let item=e.target.closest(".image-item"); if(!item)return; let pv=item.querySelector(".image-preview"); if(!pv)return; e.preventDefault(); e.stopPropagation(); let imgs=getPreviews(); let idx=imgs.findIndex(i=>i===pv); if(idx!==-1)curIdx=idx; modalImg.src=pv.src; modal.style.display="block"; document.body.style.overflow="hidden";});
     const closeModalFn=()=>{modal.style.display="none"; modalImg.src=""; document.body.style.overflow=""; curIdx=-1;};
     closeModal.onclick=closeModalFn;
-    modal.onclick=e=>{if(e.target===modal)closeModalFn();};
+    modal.onclick = e => {if (e.target === modal) { const rect = modal.getBoundingClientRect(); const x = e.clientX - rect.left; const width = rect.width; if (x < width / 4) { prev(); } else if (x > width * 3 / 4) { next(); } else { closeModalFn();}}};
     document.addEventListener("keydown",e=>{if(modal.style.display!=="block")return; if(e.key==="ArrowLeft"||e.key==="k"){prev();e.preventDefault();}else if(e.key==="ArrowRight"||e.key==="j"){next();e.preventDefault();}else if(e.key==="Escape")closeModalFn();});
-    modal.addEventListener("touchstart",e=>{touchX=e.touches[0].clientX;});
-    modal.addEventListener("touchmove",e=>{if(!touchX)return; let dx=e.touches[0].clientX-touchX; if(Math.abs(dx)>50){dx>0?prev():next(); touchX=0; e.preventDefault();}});
-    modal.addEventListener("touchend",()=>{touchX=0;});
     modal.addEventListener("wheel", e => {if (modal.style.display !== "block") return; e.preventDefault(); e.deltaY > 0 ? next() : prev();
     });
     prevBtn.onclick=e=>{e.stopPropagation(); prev();};
