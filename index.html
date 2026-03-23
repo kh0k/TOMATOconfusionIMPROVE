@@ -86,12 +86,10 @@
             <div class="info-title collapsed" id="infoTitle">工具功能说明</div>
             <div class="info-content collapsed" id="infoContent">
                 <ul class="info-list">
-                    <li>使用完全相同的希尔伯特曲线算法，确保结果与原版一致</li>
-                    <li>保持像素的空间相关性，压缩后仍能保持色彩</li>
+                    <li>处理后的图片格式为PNG</li>
+                    <li>批量下载所有处理后的图片</li>
                     <li>批量处理多张图片，支持同时混淆或解混淆</li>
-                    <li>处理后的图片格式为JPEG，质量1</li>
-                    <li>可视化处理进度和实时预览</li>
-                    <li>一键下载所有处理后的图片</li>
+                    <li>使用完全相同的希尔伯特曲线算法，绝对无损</li>
                 </ul>
                 <p style="text-align:center;margin-top:15px">使用说明：上传图片后选择"批量混淆图片"或"批量解混淆图片"，处理完成后可以查看每张图片的效果，最后点击"下载所有图片"保存结果。</p>
             </div>
@@ -110,8 +108,8 @@
     // ==================== 希尔伯特曲线算法 ====================
     function gilbert2d(w,h){let c=[];return w>=h?g(0,0,w,0,0,h,c):g(0,0,0,h,w,0,c),c}
     function g(x,y,ax,ay,bx,by,c){let w=Math.abs(ax+ay),h=Math.abs(bx+by),dax=Math.sign(ax),day=Math.sign(ay),dbx=Math.sign(bx),dby=Math.sign(by);if(h===1){for(let i=0;i<w;i++)c.push([x,y]),x+=dax,y+=day;return}if(w===1){for(let i=0;i<h;i++)c.push([x,y]),x+=dbx,y+=dby;return}let ax2=Math.floor(ax/2),ay2=Math.floor(ay/2),bx2=Math.floor(bx/2),by2=Math.floor(by/2),w2=Math.abs(ax2+ay2),h2=Math.abs(bx2+by2);if(2*w>3*h){if(w2%2&&w>2)ax2+=dax,ay2+=day;g(x,y,ax2,ay2,bx,by,c),g(x+ax2,y+ay2,ax-ax2,ay-ay2,bx,by,c)}else{if(h2%2&&h>2)bx2+=dbx,by2+=dby;g(x,y,bx2,by2,ax2,ay2,c),g(x+bx2,y+by2,ax,ay,bx-bx2,by-by2,c),g(x+(ax-dax)+(bx2-dbx),y+(ay-day)+(by2-dby),-bx2,-by2,-(ax-ax2),-(ay-ay2),c)}}
-    function encrypt(img){return new Promise(r=>{let cvs=document.createElement("canvas"),w=cvs.width=img.width,h=cvs.height=img.height,ctx=cvs.getContext("2d");ctx.drawImage(img,0,0);let d=ctx.getImageData(0,0,w,h),d2=new ImageData(w,h),curve=gilbert2d(w,h),off=Math.round(((Math.sqrt(5)-1)/2)*w*h);for(let i=0;i<w*h;i++){let old=curve[i],newPos=curve[(i+off)%(w*h)],oldP=4*(old[0]+old[1]*w),newP=4*(newPos[0]+newPos[1]*w);d2.data.set(d.data.slice(oldP,oldP+4),newP)}ctx.putImageData(d2,0,0);cvs.toBlob(b=>r(URL.createObjectURL(b)),"image/jpeg",1)})}
-    function decrypt(img){return new Promise(r=>{let cvs=document.createElement("canvas"),w=cvs.width=img.width,h=cvs.height=img.height,ctx=cvs.getContext("2d");ctx.drawImage(img,0,0);let d=ctx.getImageData(0,0,w,h),d2=new ImageData(w,h),curve=gilbert2d(w,h),off=Math.round(((Math.sqrt(5)-1)/2)*w*h);for(let i=0;i<w*h;i++){let old=curve[i],newPos=curve[(i+off)%(w*h)],oldP=4*(old[0]+old[1]*w),newP=4*(newPos[0]+newPos[1]*w);d2.data.set(d.data.slice(newP,newP+4),oldP)}ctx.putImageData(d2,0,0);cvs.toBlob(b=>r(URL.createObjectURL(b)),"image/jpeg",1)})}
+    function encrypt(img){return new Promise(r=>{let cvs=document.createElement("canvas"),w=cvs.width=img.width,h=cvs.height=img.height,ctx=cvs.getContext("2d");ctx.drawImage(img,0,0);let d=ctx.getImageData(0,0,w,h),d2=new ImageData(w,h),curve=gilbert2d(w,h),off=Math.round(((Math.sqrt(5)-1)/2)*w*h);for(let i=0;i<w*h;i++){let old=curve[i],newPos=curve[(i+off)%(w*h)],oldP=4*(old[0]+old[1]*w),newP=4*(newPos[0]+newPos[1]*w);d2.data.set(d.data.slice(oldP,oldP+4),newP)}ctx.putImageData(d2,0,0);cvs.toBlob(b=>r(URL.createObjectURL(b)),"image/png")})}
+    function decrypt(img){return new Promise(r=>{let cvs=document.createElement("canvas"),w=cvs.width=img.width,h=cvs.height=img.height,ctx=cvs.getContext("2d");ctx.drawImage(img,0,0);let d=ctx.getImageData(0,0,w,h),d2=new ImageData(w,h),curve=gilbert2d(w,h),off=Math.round(((Math.sqrt(5)-1)/2)*w*h);for(let i=0;i<w*h;i++){let old=curve[i],newPos=curve[(i+off)%(w*h)],oldP=4*(old[0]+old[1]*w),newP=4*(newPos[0]+newPos[1]*w);d2.data.set(d.data.slice(newP,newP+4),oldP)}ctx.putImageData(d2,0,0);cvs.toBlob(b=>r(URL.createObjectURL(b)),"image/png")})}
 
     // ==================== DOM 元素 ====================
     const $ = id => document.getElementById(id);
@@ -197,7 +195,7 @@
     async function saveToDir(handle){
         const suffix=getCountSuffix();
         for(let i=0;i<currentImages.length;i++){
-            const item=currentImages[i], name=getBaseName(i)+suffix+".jpg";
+            const item=currentImages[i], name=getBaseName(i)+suffix+".png";
             try{
                 const blob=await (await fetch(item.url)).blob();
                 const file=await handle.getFileHandle(name,{create:true});
@@ -217,7 +215,7 @@
         }
         const zip=new JSZip(), folder=zip.folder("混淆图片"), suffix=getCountSuffix();
         for(let i=0;i<currentImages.length;i++){
-            const name=getBaseName(i)+suffix+".jpg";
+            const name=getBaseName(i)+suffix+".png";
             try{const blob=await (await fetch(currentImages[i].url)).blob(); folder.file(name,blob);}
             catch(e){console.error(`获取图片 ${name} 失败`,e);}
         }
@@ -238,7 +236,7 @@
         if(!currentImages.length) return;
         const suffix=getCountSuffix();
         for(let i=0;i<currentImages.length;i++){
-            const name=getBaseName(i)+suffix+".jpg";
+            const name=getBaseName(i)+suffix+".png";
             try{
                 const blob=await (await fetch(currentImages[i].url)).blob();
                 const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
