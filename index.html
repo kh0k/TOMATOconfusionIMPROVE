@@ -1,15 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>批量小番茄混淆</title>
 	<style>
 		* {
 		    box-sizing: border-box;
 		    margin: 0;
 		    padding: 0;
-		    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 		}
 		
 		body {
@@ -92,7 +92,7 @@
 		
 		.normal_button:hover {
 		    transform: translateY(-2px);
-		    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+		    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 		}
 		
 		.normal_button:active {
@@ -178,7 +178,7 @@
 		    padding: 15px;
 		    border-radius: 8px;
 		    text-align: center;
-		    box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+		    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
 		    transition: transform 0.3s ease;
 		}
 		
@@ -229,7 +229,7 @@
 		}
 		
 		.info-title::before {
-		    content: '▼ ';
+		    content: "▼ ";
 		    display: inline-block;
 		    transition: transform 0.3s ease;
 		}
@@ -265,7 +265,7 @@
 		}
 		
 		.info-list li::before {
-		    content: '✓';
+		    content: "✓";
 		    color: #8a6de9;
 		    font-weight: bold;
 		    margin-right: 10px;
@@ -291,37 +291,50 @@
 		}
 		
 		@keyframes spin {
-		    to { transform: rotate(360deg); }
+		    to {
+		        transform: rotate(360deg);
+		    }
 		}
 		
 		@media (max-width: 768px) {
-		.upload-section .upload-btn {
-		    display: block;
-		    width: fit-content;
-		    margin-left: auto;
-		    margin-right: auto;
-		}
+		    .upload-section .upload-btn {
+		        display: block;
+		        width: fit-content;
+		        margin-left: auto;
+		        margin-right: auto;
+		    }
 		}
 		
 		/* 预览模态框 */
 		#previewModal {
-			    display: none;
-			        position: fixed;
-				    top: 0;
-				        left: 0;
-					    width: 100%;
-					        height: 100%;
-						    background: rgba(0,0,0,0.9);
-						        z-index: 1000;
-							    text-align: center;
+		    display: none;
+		    position: fixed;
+		    top: 0;
+		    left: 0;
+		    width: 100%;
+		    height: 100%;
+		    background: rgba(0, 0, 0, 0.9);
+		    z-index: 1000;
+		    text-align: center;
 		}
 		
 		#previewModal img {
-			    max-width: 90%;
-			        max-height: 90%;
-				    margin-top: 5%;
-				        border-radius: 8px;
-					    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+		    max-width: 90%;
+		    max-height: 90%;
+		    margin-top: 5%;
+		    border-radius: 8px;
+		    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+		}
+		
+		#prevImage,
+		#nextImage {
+		    opacity: 0.1;
+		    /* 其他基础样式 */
+		}
+		#prevImage:hover,
+		#nextImage:hover {
+		    opacity: 1;
+		    background: rgba(0, 0, 0, 0.8);
 		}
 		
 		@media (prefers-color-scheme: light) {
@@ -359,7 +372,7 @@
 		
 		    .image-item {
 		        background: #f8f9fa;
-		        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+		        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
 		    }
 		
 		    .image-preview {
@@ -391,10 +404,9 @@
 		        color: #4f1787;
 		    }
 		
-		footer {
-		    background: #180161;
-		}
-		
+		    footer {
+		        background: #180161;
+		    }
 		}
 	</style>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -405,38 +417,38 @@
 			<div class="upload-section" id="uploadSection">
 				<h2>上传多张图片进行批量处理</h2>
 				<p>支持点击选择或拖拽图片到此处上传</p>
-				<label class="normal_button upload-btn"> 选择图片 <input type="file" id="fileInput" class="file-input" accept="image/*" multiple>
+				<label class="normal_button upload-btn"> 选择图片 <input type="file" id="fileInput" class="file-input" accept="image/*" multiple />
 				</label>
 				<p id="selectedFiles">未选择文件</p>
 			</div>
 			<div class="process-buttons">
-				<button id="encryptBtn" class="normal_button encrypt-btn" disabled>批量混淆</button>
-				<button id="decryptBtn" class="normal_button decrypt-btn" disabled>批量解混淆</button>
-				<button id="saveAsBtn" class="normal_button download-btn" disabled>所有另存为</button>
-				<button id="downloadBtn" class="normal_button download-btn" disabled>下载所有</button>
+				<button id="encryptBtn" class="normal_button encrypt-btn" disabled> 批量混淆 </button>
+				<button id="decryptBtn" class="normal_button decrypt-btn" disabled> 批量解混淆 </button>
+				<button id="saveAsBtn" class="normal_button download-btn" disabled> 所有另存为 </button>
+				<button id="downloadBtn" class="normal_button download-btn" disabled> 下载所有 </button>
 			</div>
 			<div class="progress-container">
 				<div class="progress-title">处理进度</div>
 				<div class="progress-bar">
 					<div class="progress-fill" id="progressFill"></div>
 				</div>
-				<div class="progress-text" id="progressText">0 / 0 已完成</div>
+				<div class="progress-text" id="progressText"> 0 / 0 已完成 </div>
 			</div>
 			<div class="image-grid" id="imageGrid">
 				<!-- 图片预览将在这里动态生成 -->
 			</div>
 			<div class="info-box">
-				<div class="info-title collapsed" id="infoTitle">工具功能说明</div>
+				<div class="info-title collapsed" id="infoTitle"> 工具功能说明 </div>
 				<div class="info-content collapsed" id="infoContent">
 					<ul class="info-list">
-						<li>使用完全相同的希尔伯特曲线算法，确保结果与原版一致</li>
+						<li> 使用完全相同的希尔伯特曲线算法，确保结果与原版一致 </li>
 						<li>保持像素的空间相关性，压缩后仍能保持色彩</li>
 						<li>批量处理多张图片，支持同时混淆或解混淆</li>
 						<li>处理后的图片格式为JPEG，质量1</li>
 						<li>可视化处理进度和实时预览</li>
 						<li>一键下载所有处理后的图片</li>
 					</ul>
-					<p style="text-align: center; margin-top: 15px;">使用说明：上传图片后选择"批量混淆图片"或"批量解混淆图片"，处理完成后可以查看每张图片的效果，最后点击"下载所有图片"保存结果。</p>
+					<p style="text-align: center; margin-top: 15px"> 使用说明：上传图片后选择"批量混淆图片"或"批量解混淆图片"，处理完成后可以查看每张图片的效果，最后点击"下载所有图片"保存结果。 </p>
 				</div>
 			</div>
 		</div>
@@ -445,9 +457,58 @@
 		</footer>
 	</div>
 	<!-- 图片预览模态框 -->
-	<div id="previewModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; text-align:center;">
-		<span id="closeModal" style="position:absolute; top:20px; right:30px; color:white; font-size:30px; cursor:pointer;">&times;</span>
-		<img id="modalImage" style="max-width:90%; max-height:90%; margin-top:5%;">
+	<div id="previewModal" style="
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 1000;
+                text-align: center;
+            ">
+		<span id="closeModal" style="
+                    position: absolute;
+                    top: 20px;
+                    right: 30px;
+                    color: white;
+                    font-size: 30px;
+                    cursor: pointer;
+                ">&times;</span>
+		<img id="modalImage" style="max-width: 90%; max-height: 90%; margin-top: 5%" />
+		<!-- 左箭头 -->
+		<button id="prevImage" style="
+                    position: absolute;
+                    left: 20px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: rgba(0, 0, 0, 0.5);
+                    color: white;
+                    border: none;
+                    font-size: 40px;
+                    width: 50px;
+                    height: 80px;
+                    cursor: pointer;
+                    border-radius: 8px;
+                    transition: opacity 0.2s;
+                "> ❮ </button>
+		<!-- 右箭头 -->
+		<button id="nextImage" style="
+                    position: absolute;
+                    right: 20px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: rgba(0, 0, 0, 0.5);
+                    color: white;
+                    border: none;
+                    font-size: 40px;
+                    width: 50px;
+                    height: 80px;
+                    cursor: pointer;
+                    border-radius: 8px;
+                    transition: opacity 0.2s;
+                "> ❯ </button>
 	</div>
 	<script>
 		function gilbert2d(width, height) {
@@ -466,8 +527,10 @@
 		    const w = Math.abs(ax + ay);
 		    const h = Math.abs(bx + by);
 		
-		    const dax = Math.sign(ax), day = Math.sign(ay);
-		    const dbx = Math.sign(bx), dby = Math.sign(by);
+		    const dax = Math.sign(ax),
+		        day = Math.sign(ay);
+		    const dbx = Math.sign(bx),
+		        dby = Math.sign(by);
 		
 		    if (h === 1) {
 		        for (let i = 0; i < w; i++) {
@@ -487,101 +550,143 @@
 		        return;
 		    }
 		
-		    let ax2 = Math.floor(ax / 2), ay2 = Math.floor(ay / 2);
-		    let bx2 = Math.floor(bx / 2), by2 = Math.floor(by / 2);
+		    let ax2 = Math.floor(ax / 2),
+		        ay2 = Math.floor(ay / 2);
+		    let bx2 = Math.floor(bx / 2),
+		        by2 = Math.floor(by / 2);
 		
 		    const w2 = Math.abs(ax2 + ay2);
 		    const h2 = Math.abs(bx2 + by2);
 		
 		    if (2 * w > 3 * h) {
-		        if ((w2 % 2) && (w > 2)) {
+		        if (w2 % 2 && w > 2) {
 		            ax2 += dax;
 		            ay2 += day;
 		        }
 		
 		        generate2d(x, y, ax2, ay2, bx, by, coordinates);
-		        generate2d(x + ax2, y + ay2, ax - ax2, ay - ay2, bx, by, coordinates);
-		
+		        generate2d(
+		            x + ax2,
+		            y + ay2,
+		            ax - ax2,
+		            ay - ay2,
+		            bx,
+		            by,
+		            coordinates,
+		        );
 		    } else {
-		        if ((h2 % 2) && (h > 2)) {
+		        if (h2 % 2 && h > 2) {
 		            bx2 += dbx;
 		            by2 += dby;
 		        }
 		
 		        generate2d(x, y, bx2, by2, ax2, ay2, coordinates);
-		        generate2d(x + bx2, y + by2, ax, ay, bx - bx2, by - by2, coordinates);
-		        generate2d(x + (ax - dax) + (bx2 - dbx), y + (ay - day) + (by2 - dby),
-		            -bx2, -by2, -(ax - ax2), -(ay - ay2), coordinates);
+		        generate2d(
+		            x + bx2,
+		            y + by2,
+		            ax,
+		            ay,
+		            bx - bx2,
+		            by - by2,
+		            coordinates,
+		        );
+		        generate2d(
+		            x + (ax - dax) + (bx2 - dbx),
+		            y + (ay - day) + (by2 - dby),
+		            -bx2,
+		            -by2,
+		            -(ax - ax2),
+		            -(ay - ay2),
+		            coordinates,
+		        );
 		    }
 		}
 		
 		function encrypt(img) {
 		    return new Promise((resolve) => {
 		        const cvs = document.createElement("canvas");
-		        const width = cvs.width = img.width;
-		        const height = cvs.height = img.height;
+		        const width = (cvs.width = img.width);
+		        const height = (cvs.height = img.height);
 		        const ctx = cvs.getContext("2d");
 		        ctx.drawImage(img, 0, 0);
 		        const imgdata = ctx.getImageData(0, 0, width, height);
 		        const imgdata2 = new ImageData(width, height);
 		        const curve = gilbert2d(width, height);
-		        const offset = Math.round((Math.sqrt(5) - 1) / 2 * width * height);
-		        
-		        for(let i = 0; i < width * height; i++){
+		        const offset = Math.round(
+		            ((Math.sqrt(5) - 1) / 2) * width * height,
+		        );
+		
+		        for (let i = 0; i < width * height; i++) {
 		            const old_pos = curve[i];
 		            const new_pos = curve[(i + offset) % (width * height)];
 		            const old_p = 4 * (old_pos[0] + old_pos[1] * width);
 		            const new_p = 4 * (new_pos[0] + new_pos[1] * width);
-		            imgdata2.data.set(imgdata.data.slice(old_p, old_p + 4), new_p);
+		            imgdata2.data.set(
+		                imgdata.data.slice(old_p, old_p + 4),
+		                new_p,
+		            );
 		        }
-		        
+		
 		        ctx.putImageData(imgdata2, 0, 0);
-		        cvs.toBlob(b => {
-		            resolve(URL.createObjectURL(b));
-		        }, "image/jpeg", 1);
+		        cvs.toBlob(
+		            (b) => {
+		                resolve(URL.createObjectURL(b));
+		            },
+		            "image/jpeg",
+		            1,
+		        );
 		    });
 		}
 		
 		function decrypt(img) {
 		    return new Promise((resolve) => {
 		        const cvs = document.createElement("canvas");
-		        const width = cvs.width = img.width;
-		        const height = cvs.height = img.height;
+		        const width = (cvs.width = img.width);
+		        const height = (cvs.height = img.height);
 		        const ctx = cvs.getContext("2d");
 		        ctx.drawImage(img, 0, 0);
 		        const imgdata = ctx.getImageData(0, 0, width, height);
 		        const imgdata2 = new ImageData(width, height);
 		        const curve = gilbert2d(width, height);
-		        const offset = Math.round((Math.sqrt(5) - 1) / 2 * width * height);
-		        
-		        for(let i = 0; i < width * height; i++){
+		        const offset = Math.round(
+		            ((Math.sqrt(5) - 1) / 2) * width * height,
+		        );
+		
+		        for (let i = 0; i < width * height; i++) {
 		            const old_pos = curve[i];
 		            const new_pos = curve[(i + offset) % (width * height)];
 		            const old_p = 4 * (old_pos[0] + old_pos[1] * width);
 		            const new_p = 4 * (new_pos[0] + new_pos[1] * width);
-		            imgdata2.data.set(imgdata.data.slice(new_p, new_p + 4), old_p);
+		            imgdata2.data.set(
+		                imgdata.data.slice(new_p, new_p + 4),
+		                old_p,
+		            );
 		        }
-		        
+		
 		        ctx.putImageData(imgdata2, 0, 0);
-		        cvs.toBlob(b => {
-		            resolve(URL.createObjectURL(b));
-		        }, "image/jpeg", 1);
+		        cvs.toBlob(
+		            (b) => {
+		                resolve(URL.createObjectURL(b));
+		            },
+		            "image/jpeg",
+		            1,
+		        );
 		    });
 		}
 		
 		// DOM元素引用
-		const fileInput = document.getElementById('fileInput');
-		const uploadSection = document.getElementById('uploadSection');
-		const encryptBtn = document.getElementById('encryptBtn');
-		const decryptBtn = document.getElementById('decryptBtn');
-		const downloadBtn = document.getElementById('downloadBtn');
-		const selectedFiles = document.getElementById('selectedFiles');
-		const progressFill = document.getElementById('progressFill');
-		const progressText = document.getElementById('progressText');
-		const imageGrid = document.getElementById('imageGrid');
-		const infoTitle = document.getElementById('infoTitle');
-		const infoContent = document.getElementById('infoContent');
-		const saveAsBtn = document.getElementById('saveAsBtn');
+		const fileInput = document.getElementById("fileInput");
+		const uploadSection = document.getElementById("uploadSection");
+		const encryptBtn = document.getElementById("encryptBtn");
+		const decryptBtn = document.getElementById("decryptBtn");
+		const downloadBtn = document.getElementById("downloadBtn");
+		const selectedFiles = document.getElementById("selectedFiles");
+		const progressFill = document.getElementById("progressFill");
+		const progressText = document.getElementById("progressText");
+		const imageGrid = document.getElementById("imageGrid");
+		const infoTitle = document.getElementById("infoTitle");
+		const infoContent = document.getElementById("infoContent");
+		const saveAsBtn = document.getElementById("saveAsBtn");
 		
 		// 存储上传的图片和处理结果
 		let uploadedImages = [];
@@ -591,46 +696,45 @@
 		
 		// 处理文件选择
 		function handleFiles(files) {
-		    if (isProcessing) {
-		        return;
-		    }
-		    
-		    const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
-		    
+		    if (isProcessing) return;
+		
+		    const imageFiles = Array.from(files).filter((file) =>
+		        file.type.startsWith("image/"),
+		    );
 		    if (imageFiles.length === 0) return;
-		    
+		
 		    selectedFiles.textContent = `已选择 ${imageFiles.length} 个文件`;
 		    encryptBtn.disabled = false;
 		    decryptBtn.disabled = false;
-		    
+		
 		    // 清空之前的图片
 		    uploadedImages = [];
 		    processedImages = [];
-		    imageGrid.innerHTML = '';
-		    
+		    imageGrid.innerHTML = "";
+		
 		    // 处理每个文件
 		    imageFiles.forEach((file, index) => {
 		        const reader = new FileReader();
-		        reader.onload = function(e) {
+		        reader.onload = function (e) {
 		            const img = new Image();
-		            img.onload = function() {
+		            img.onload = function () {
 		                uploadedImages.push({
 		                    index: index,
 		                    name: file.name,
 		                    originalUrl: URL.createObjectURL(file),
 		                    image: img,
 		                    width: img.width,
-		                    height: img.height
+		                    height: img.height,
 		                });
-		                
+		
 		                // 添加到预览网格
-		                const imageItem = document.createElement('div');
-		                imageItem.className = 'image-item';
+		                const imageItem = document.createElement("div");
+		                imageItem.className = "image-item";
 		                imageItem.innerHTML = `
-		                    <img class="image-preview" src="${URL.createObjectURL(file)}" alt="${file.name}">
-		                    <div class="image-name">${file.name}</div>
-		                    <div class="image-status" data-index="${index}">等待处理</div>
-		                `;
+					<img class="image-preview" src="${URL.createObjectURL(file)}" alt="${file.name}">
+					<div class="image-name">${file.name}</div>
+					<div class="image-status" data-index="${index}">等待处理</div>
+							`;
 		                imageGrid.appendChild(imageItem);
 		            };
 		            img.src = e.target.result;
@@ -640,289 +744,366 @@
 		}
 		
 		// 文件选择事件
-		fileInput.addEventListener('change', function(e) {
+		fileInput.addEventListener("change", function (e) {
 		    handleFiles(e.target.files);
 		});
 		
 		// 拖拽事件
-		uploadSection.addEventListener('dragover', function(e) {
+		uploadSection.addEventListener("dragover", function (e) {
 		    e.preventDefault();
 		    e.stopPropagation();
-		    this.classList.add('dragover');
+		    this.classList.add("dragover");
 		});
 		
-		uploadSection.addEventListener('dragleave', function(e) {
+		uploadSection.addEventListener("dragleave", function (e) {
 		    e.preventDefault();
 		    e.stopPropagation();
-		    this.classList.remove('dragover');
+		    this.classList.remove("dragover");
 		});
 		
-		uploadSection.addEventListener('drop', function(e) {
+		uploadSection.addEventListener("drop", function (e) {
 		    e.preventDefault();
 		    e.stopPropagation();
-		    this.classList.remove('dragover');
+		    this.classList.remove("dragover");
 		    handleFiles(e.dataTransfer.files);
 		});
 		
 		// 折叠功能
-		infoTitle.addEventListener('click', function() {
-		    this.classList.toggle('collapsed');
-		    infoContent.classList.toggle('collapsed');
+		infoTitle.addEventListener("click", function () {
+		    this.classList.toggle("collapsed");
+		    infoContent.classList.toggle("collapsed");
 		});
 		
 		// 批量处理函数
 		async function batchProcess(mode) {
 		    if (uploadedImages.length === 0 || isProcessing) return;
-		    
+		
 		    isProcessing = true;
 		    encryptBtn.disabled = true;
 		    decryptBtn.disabled = true;
 		    downloadBtn.disabled = true;
 		    saveAsBtn.disabled = true;
-		    
+		
 		    processedImages = [];
 		    const total = uploadedImages.length;
 		    let completed = 0;
-		    
-		    // 更新进度条
-		    progressFill.style.width = '0%';
+		
+		    progressFill.style.width = "0%";
 		    progressText.textContent = `0 / ${total} 已完成`;
-		    
-		    // 依次处理每张图片，添加延迟避免UI阻塞
+		
 		    for (let i = 0; i < total; i++) {
 		        const imageData = uploadedImages[i];
-		        const statusElement = document.querySelector(`.image-status[data-index="${i}"]`);
-		        
+		        const statusElement = document.querySelector(
+		            `.image-status[data-index="${i}"]`,
+		        );
+		
 		        try {
-		            statusElement.textContent = '处理中...';
-		            statusElement.style.color = '#4f1787';
-		            
-		            // 添加延迟，避免UI阻塞
-		            await new Promise(resolve => setTimeout(resolve, 50));
-		            
-		            const processFunc = mode === 'encrypt' ? encrypt : decrypt;
+		            statusElement.textContent = "处理中...";
+		            statusElement.style.color = "#4f1787";
+		
+		            await new Promise((resolve) => setTimeout(resolve, 50));
+		
+		            const processFunc =
+		                mode === "encrypt" ? encrypt : decrypt;
 		            const processedUrl = await processFunc(imageData.image);
-		            
+		
 		            processedImages.push({
 		                index: i,
 		                name: imageData.name,
 		                originalUrl: imageData.originalUrl,
-		                processedUrl: processedUrl
+		                processedUrl: processedUrl,
 		            });
-		            
-		            // 更新预览
-		            document.querySelector(`.image-item:nth-child(${i + 1}) .image-preview`).src = processedUrl;
-		            statusElement.textContent = mode === 'encrypt' ? '已混淆' : '已解混淆';
-		            statusElement.style.color = '#2ecc71';
-		            
+		
+		            document.querySelector(
+		                `.image-item:nth-child(${i + 1}) .image-preview`,
+		            ).src = processedUrl;
+		            statusElement.textContent =
+		                mode === "encrypt" ? "已混淆" : "已解混淆";
+		            statusElement.style.color = "#2ecc71";
 		        } catch (error) {
-		            statusElement.textContent = '处理失败';
-		            statusElement.style.color = '#e74c3c';
-		            console.error(`处理图片 ${imageData.name} 时出错:`, error);
+		            statusElement.textContent = "处理失败";
+		            statusElement.style.color = "#e74c3c";
+		            console.error(
+		                `处理图片 ${imageData.name} 时出错:`,
+		                error,
+		            );
 		        }
-		        
+		
 		        completed++;
 		        const progress = Math.round((completed / total) * 100);
 		        progressFill.style.width = `${progress}%`;
 		        progressText.textContent = `${completed} / ${total} 已完成`;
-		        
-		        // 添加短暂延迟，避免UI阻塞
-		        await new Promise(resolve => setTimeout(resolve, 50));
+		
+		        await new Promise((resolve) => setTimeout(resolve, 50));
 		    }
-		    
+		
 		    isProcessing = false;
 		    downloadBtn.disabled = false;
 		    saveAsBtn.disabled = false;
 		}
 		
-		// 按钮事件
-		encryptBtn.addEventListener('click', () => batchProcess('encrypt'));
-		decryptBtn.addEventListener('click', () => batchProcess('decrypt'));
+		encryptBtn.addEventListener("click", () => batchProcess("encrypt"));
+		decryptBtn.addEventListener("click", () => batchProcess("decrypt"));
 		
-		// 所有另存为按钮：支持 API 则选文件夹保存，否则打包为 ZIP 另存为
-		saveAsBtn.addEventListener('click', async function() {
-			    if (processedImages.length === 0) return;
+		// 所有另存为按钮
+		saveAsBtn.addEventListener("click", async function () {
+		    if (processedImages.length === 0) return;
 		
-			    // 情况1：支持 File System Access API → 选择文件夹保存
-			    if (window.showDirectoryPicker) {
-				            let directoryHandle;
-				            try {
-						                directoryHandle = await window.showDirectoryPicker();
-						            } catch (err) {
-								                return; // 用户取消选择
-								            }
+		    // 支持文件夹选择
+		    if (window.showDirectoryPicker) {
+		        let directoryHandle;
+		        try {
+		            directoryHandle = await window.showDirectoryPicker();
+		        } catch (err) {
+		            return;
+		        }
 		
-				            // 逐个保存到选定文件夹
-				            for (let i = 0; i < processedImages.length; i++) {
-						                const imageData = processedImages[i];
-						                try {
-									                const response = await fetch(imageData.processedUrl);
-									                const blob = await response.blob();
+		        for (let i = 0; i < processedImages.length; i++) {
+		            const imageData = processedImages[i];
+		            try {
+		                const response = await fetch(
+		                    imageData.processedUrl,
+		                );
+		                const blob = await response.blob();
 		
-									                const fileHandle = await directoryHandle.getFileHandle(
-												                    `${imageData.name.replace(/\.[^/.]+$/, "")}_${imageData.index + 1}.jpg`,
-												                    { create: true }
-												                );
-									                const writable = await fileHandle.createWritable();
-									                await writable.write(blob);
-									                await writable.close();
+		                const fileHandle =
+		                    await directoryHandle.getFileHandle(
+		                        `${imageData.name.replace(/\.[^/.]+$/, "")}_${imageData.index + 1}.jpg`,
+		                        { create: true },
+		                    );
+		                const writable = await fileHandle.createWritable();
+		                await writable.write(blob);
+		                await writable.close();
 		
-									                const statusEl = document.querySelector(`.image-status[data-index="${imageData.index}"]`);
-									                statusEl.textContent = '已保存';
-									                statusEl.style.color = '#3498db';
-									            } catch (error) {
-											                    console.error(`保存图片 ${imageData.name} 失败:`, error);
-											                    const statusEl = document.querySelector(`.image-status[data-index="${imageData.index}"]`);
-											                    statusEl.textContent = '保存失败';
-											                    statusEl.style.color = '#e74c3c';
-											                }
-						            }
-				            return;
-				        }
+		                const statusEl = document.querySelector(
+		                    `.image-status[data-index="${imageData.index}"]`,
+		                );
+		                statusEl.textContent = "已保存";
+		                statusEl.style.color = "#3498db";
+		            } catch (error) {
+		                console.error(
+		                    `保存图片 ${imageData.name} 失败:`,
+		                    error,
+		                );
+		                const statusEl = document.querySelector(
+		                    `.image-status[data-index="${imageData.index}"]`,
+		                );
+		                statusEl.textContent = "保存失败";
+		                statusEl.style.color = "#e74c3c";
+		            }
+		        }
+		        return;
+		    }
 		
-			    // 情况2：不支持 API → 打包为 ZIP 并使用另存为选择路径
-			    const zip = new JSZip();
-			    const folder = zip.folder('混淆图片');
+		    // 不支持文件夹选择，打包为 ZIP
+		    const zip = new JSZip();
+		    const folder = zip.folder("混淆图片");
 		
-			    // 并发获取所有图片并添加到 ZIP
-			    await Promise.all(processedImages.map(async (imgData) => {
-				            try {
-						                const response = await fetch(imgData.processedUrl);
-						                const blob = await response.blob();
-						                const fileName = `${imgData.name.replace(/\.[^/.]+$/, "")}_${imgData.index + 1}.jpg`;
-						                folder.file(fileName, blob);
-						            } catch (error) {
-								                console.error(`获取图片 ${imgData.name} 失败:`, error);
-								            }
-				        }));
+		    await Promise.all(
+		        processedImages.map(async (imgData) => {
+		            try {
+		                const response = await fetch(imgData.processedUrl);
+		                const blob = await response.blob();
+		                const fileName = `${imgData.name.replace(/\.[^/.]+$/, "")}_${imgData.index + 1}.jpg`;
+		                folder.file(fileName, blob);
+		            } catch (error) {
+		                console.error(
+		                    `获取图片 ${imgData.name} 失败:`,
+		                    error,
+		                );
+		            }
+		        }),
+		    );
 		
-			    // 生成 ZIP
-			    const zipBlob = await zip.generateAsync({ type: 'blob' });
+		    const zipBlob = await zip.generateAsync({ type: "blob" });
 		
-			    // 使用 File System Access API 的 showSaveFilePicker 选择保存路径
-			    if (window.showSaveFilePicker) {
-				            try {
-						                const handle = await window.showSaveFilePicker({
-									                suggestedName: `混淆图片_${new Date().getTime()}.zip`,
-									                types: [{
-												                    description: 'ZIP 文件',
-												                    accept: { 'application/zip': ['.zip'] }
-												                }]
-									            });
-						                const writable = await handle.createWritable();
-						                await writable.write(zipBlob);
-						                await writable.close();
-						                
-						                // 更新所有状态为已保存
-						                processedImages.forEach(img => {
-									                const statusEl = document.querySelector(`.image-status[data-index="${img.index}"]`);
-									                if (statusEl) {
-												                    statusEl.textContent = '已保存';
-												                    statusEl.style.color = '#3498db';
-												                }
-									            });
-						            } catch (err) {
-								                // 用户取消，回退到普通下载
-								                const link = document.createElement('a');
-								                link.href = URL.createObjectURL(zipBlob);
-								                link.download = `混淆图片_${new Date().getTime()}.zip`;
-								                document.body.appendChild(link);
-								                link.click();
-								                document.body.removeChild(link);
-								                URL.revokeObjectURL(link.href);
-								            }
-				        } else {
-						        // 完全不支持 API，普通下载
-						        const link = document.createElement('a');
-						        link.href = URL.createObjectURL(zipBlob);
-						        link.download = `混淆图片_${new Date().getTime()}.zip`;
-						        document.body.appendChild(link);
-						        link.click();
-						        document.body.removeChild(link);
-						        URL.revokeObjectURL(link.href);
-						    }
+		    if (window.showSaveFilePicker) {
+		        try {
+		            const handle = await window.showSaveFilePicker({
+		                suggestedName: `混淆图片_${new Date().getTime()}.zip`,
+		                types: [
+		                    {
+		                        description: "ZIP 文件",
+		                        accept: { "application/zip": [".zip"] },
+		                    },
+		                ],
+		            });
+		            const writable = await handle.createWritable();
+		            await writable.write(zipBlob);
+		            await writable.close();
+		
+		            processedImages.forEach((img) => {
+		                const statusEl = document.querySelector(
+		                    `.image-status[data-index="${img.index}"]`,
+		                );
+		                if (statusEl) {
+		                    statusEl.textContent = "已保存";
+		                    statusEl.style.color = "#3498db";
+		                }
+		            });
+		            return;
+		        } catch (err) {
+		            // 用户取消，回退到普通下载
+		        }
+		    }
+		
+		    // 普通下载
+		    const link = document.createElement("a");
+		    link.href = URL.createObjectURL(zipBlob);
+		    link.download = `混淆图片_${new Date().getTime()}.zip`;
+		    document.body.appendChild(link);
+		    link.click();
+		    document.body.removeChild(link);
+		    URL.revokeObjectURL(link.href);
 		});
 		
-		// 下载所有图片
-		downloadBtn.addEventListener('click', async function() {
+		// 下载所有图片（单个文件）
+		downloadBtn.addEventListener("click", async function () {
 		    if (processedImages.length === 0) return;
-		    
+		
 		    for (let i = 0; i < processedImages.length; i++) {
 		        const imageData = processedImages[i];
-		        
 		        try {
-		            // 获取Blob数据
 		            const response = await fetch(imageData.processedUrl);
 		            const blob = await response.blob();
-		            
-		            // 创建下载链接
-		            const a = document.createElement('a');
+		
+		            const a = document.createElement("a");
 		            a.href = URL.createObjectURL(blob);
 		            a.download = `${imageData.name.replace(/\.[^/.]+$/, "")}_${imageData.index + 1}.jpg`;
 		            document.body.appendChild(a);
 		            a.click();
 		            document.body.removeChild(a);
-		            
-		            // 更新状态
-		            const statusElement = document.querySelector(`.image-status[data-index="${imageData.index}"]`);
-		            statusElement.textContent = '已下载';
-		            statusElement.style.color = '#3498db';
-		            
+		
+		            const statusElement = document.querySelector(
+		                `.image-status[data-index="${imageData.index}"]`,
+		            );
+		            statusElement.textContent = "已下载";
+		            statusElement.style.color = "#3498db";
 		        } catch (error) {
-		            console.error(`下载图片 ${imageData.name} 时出错:`, error);
-		            const statusElement = document.querySelector(`.image-status[data-index="${imageData.index}"]`);
-		            statusElement.textContent = '下载失败';
-		            statusElement.style.color = '#e74c3c';
+		            console.error(
+		                `下载图片 ${imageData.name} 时出错:`,
+		                error,
+		            );
+		            const statusElement = document.querySelector(
+		                `.image-status[data-index="${imageData.index}"]`,
+		            );
+		            statusElement.textContent = "下载失败";
+		            statusElement.style.color = "#e74c3c";
 		        }
-		        
-		        // 添加一点延迟，避免同时发起太多下载请求
-		        await new Promise(resolve => setTimeout(resolve, 100));
+		        await new Promise((resolve) => setTimeout(resolve, 100));
 		    }
 		});
 		
-		// 预览大图功能
-		const modal = document.getElementById('previewModal');
-		const modalImg = document.getElementById('modalImage');
-		const closeModal = document.getElementById('closeModal');
+		// ================== 大图预览与切换 ==================
+		const modal = document.getElementById("previewModal");
+		const modalImg = document.getElementById("modalImage");
+		const closeModal = document.getElementById("closeModal");
+		const prevBtn = document.getElementById("prevImage");
+		const nextBtn = document.getElementById("nextImage");
 		
-		// 点击 image-item 区域显示大图 - 使用事件委托
-		document.addEventListener('click', function(e) {
-			    const item = e.target.closest('.image-item');
-			    if (!item) return;
-			    
-			    const preview = item.querySelector('.image-preview');
-			    if (!preview) return;
-			    
-			    e.preventDefault();
-			    e.stopPropagation();
-			    modalImg.src = preview.src;
-			    modal.style.display = 'block';
-			    document.body.style.overflow = 'hidden';
+		let currentIndex = -1; // 当前显示的图片在预览数组中的索引
+		let touchStartX = 0; // 触摸滑动起点 X 坐标
+		
+		// 获取当前所有预览图元素（实时更新）
+		function getPreviewImages() {
+		    return Array.from(document.querySelectorAll(".image-preview"));
+		}
+		
+		// 更新模态框图片并记录索引
+		function updateModalImage(index) {
+		    const images = getPreviewImages();
+		    if (images.length === 0) return;
+		    if (index < 0) index = images.length - 1;
+		    if (index >= images.length) index = 0;
+		    currentIndex = index;
+		    modalImg.src = images[currentIndex].src;
+		}
+		
+		// 上一张 / 下一张
+		function prevImage() {
+		    updateModalImage(currentIndex - 1);
+		}
+		function nextImage() {
+		    updateModalImage(currentIndex + 1);
+		}
+		
+		// 显示大图（点击缩略图）
+		document.addEventListener("click", function (e) {
+		    const item = e.target.closest(".image-item");
+		    if (!item) return;
+		    const preview = item.querySelector(".image-preview");
+		    if (!preview) return;
+		
+		    e.preventDefault();
+		    e.stopPropagation();
+		
+		    const images = getPreviewImages();
+		    const clickedIndex = images.findIndex((img) => img === preview);
+		    if (clickedIndex !== -1) currentIndex = clickedIndex;
+		    modalImg.src = preview.src;
+		    modal.style.display = "block";
+		    document.body.style.overflow = "hidden";
 		});
 		
-		// 点击关闭按钮隐藏
-		closeModal.addEventListener('click', function() {
-			    modal.style.display = 'none';
-			    modalImg.src = '';
-			    document.body.style.overflow = '';
+		// 关闭模态框（重置索引）
+		function closeModalFunc() {
+		    modal.style.display = "none";
+		    modalImg.src = "";
+		    document.body.style.overflow = "";
+		    currentIndex = -1;
+		}
+		
+		closeModal.addEventListener("click", closeModalFunc);
+		modal.addEventListener("click", function (e) {
+		    if (e.target === modal) closeModalFunc();
 		});
 		
-		// 点击模态框背景也关闭
-		modal.addEventListener('click', function(e) {
-			    if (e.target === modal) {
-				            modal.style.display = 'none';
-				            modalImg.src = '';
-				            document.body.style.overflow = '';
-				        }
+		// 键盘左右键切换
+		document.addEventListener("keydown", function (e) {
+		    if (modal.style.display !== "block") return;
+		    if (e.key === "ArrowLeft" || e.key === "k") {
+		        prevImage();
+		        e.preventDefault();
+		    } else if (e.key === "ArrowRight" || e.key === "j") {
+		        nextImage();
+		        e.preventDefault();
+		    } else if (e.key === "Escape") {
+		        closeModalFunc();
+		    }
 		});
 		
-		// ESC键关闭
-		document.addEventListener('keydown', function(e) {
-			    if (e.key === 'Escape' && modal.style.display === 'block') {
-				            modal.style.display = 'none';
-				            modalImg.src = '';
-				            document.body.style.overflow = '';
-				        }
+		// 触摸滑动切换（移动端）
+		modal.addEventListener("touchstart", function (e) {
+		    touchStartX = e.touches[0].clientX;
+		});
+		
+		modal.addEventListener("touchmove", function (e) {
+		    if (!touchStartX) return;
+		    const deltaX = e.touches[0].clientX - touchStartX;
+		    if (Math.abs(deltaX) > 50) {
+		        // 滑动超过 50px 触发切换
+		        if (deltaX > 0) {
+		            prevImage(); // 右滑 -> 上一张
+		        } else {
+		            nextImage(); // 左滑 -> 下一张
+		        }
+		        touchStartX = 0; // 重置，避免连续触发
+		        e.preventDefault();
+		    }
+		});
+		
+		modal.addEventListener("touchend", function () {
+		    touchStartX = 0;
+		});
+		
+		// 左右按钮点击
+		prevBtn.addEventListener("click", function (e) {
+		    e.stopPropagation();
+		    prevImage();
+		});
+		nextBtn.addEventListener("click", function (e) {
+		    e.stopPropagation();
+		    nextImage();
 		});
 	</script>
 </body>
