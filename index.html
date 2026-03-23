@@ -511,7 +511,7 @@
 	</div>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 	<script>
-		// ==================== 希尔伯特曲线算法（不变） ====================
+		// ==================== 希尔伯特曲线算法 ====================
 		function gilbert2d(width, height) {
 		    const coordinates = [];
 		    if (width >= height) {
@@ -658,7 +658,6 @@
 		        );
 		    });
 		}
-		
 		// ==================== DOM 元素 ====================
 		const fileInput = document.getElementById("fileInput");
 		const uploadSection = document.getElementById("uploadSection");
@@ -669,6 +668,7 @@
 		const selectedFiles = document.getElementById("selectedFiles");
 		const progressFill = document.getElementById("progressFill");
 		const progressText = document.getElementById("progressText");
+		const progressTitle = document.querySelector(".progress-title");
 		const imageGrid = document.getElementById("imageGrid");
 		const infoTitle = document.getElementById("infoTitle");
 		const infoContent = document.getElementById("infoContent");
@@ -676,9 +676,9 @@
 		// ==================== 核心数据结构 ====================
 		let currentImages = []; // { image: HTMLImageElement, url: string }
 		let isProcessing = false;
+		let netCount = 0; // 净混淆次数（正=混淆，负=解混淆）
 		
 		// ==================== 辅助函数 ====================
-		// 从 URL 加载 Image 对象
 		function loadImageFromUrl(url) {
 		    return new Promise((resolve, reject) => {
 		        const img = new Image();
@@ -688,23 +688,6 @@
 		    });
 		}
 		
-		// 更新预览网格中某一项的图片和状态
-		function updatePreviewItem(index, newUrl, statusText, statusColor) {
-		    const items = document.querySelectorAll(".image-item");
-		    if (items[index]) {
-		        const previewImg =
-		            items[index].querySelector(".image-preview");
-		        if (previewImg) previewImg.src = newUrl;
-		        const statusDiv =
-		            items[index].querySelector(".image-status");
-		        if (statusDiv) {
-		            statusDiv.textContent = statusText;
-		            statusDiv.style.color = statusColor;
-		        }
-		    }
-		}
-		
-		// 启用/禁用所有操作按钮（处理中时调用）
 		function setButtonsEnabled(enabled) {
 		    encryptBtn.disabled = !enabled;
 		    decryptBtn.disabled = !enabled;
@@ -712,15 +695,15 @@
 		    saveAsBtn.disabled = !enabled;
 		}
 		
-		// 重置按钮状态（上传新图片后）
 		function resetButtonsAfterUpload() {
 		    encryptBtn.disabled = false;
 		    decryptBtn.disabled = false;
-		    downloadBtn.disabled = true; // 还未处理过任何图片
+		    downloadBtn.disabled = true;
 		    saveAsBtn.disabled = true;
+		    netCount = 0;
+		    updateNetCountDisplay();
 		}
 		
-		// 处理完成后启用混淆/解混淆按钮，并确保下载/保存按钮可用（如果有图片）
 		function enableButtonsAfterProcess() {
 		    encryptBtn.disabled = false;
 		    decryptBtn.disabled = false;
@@ -730,18 +713,26 @@
 		    }
 		}
 		
-		// 更新进度条
 		function updateProgress(completed, total) {
 		    const percent = Math.round((completed / total) * 100);
 		    progressFill.style.width = `${percent}%`;
 		    progressText.textContent = `${completed} / ${total} 已完成`;
 		}
 		
+		function updateNetCountDisplay() {
+		    const sign =
+		        netCount > 0
+		            ? `+${netCount}`
+		            : netCount < 0
+		              ? `${netCount}`
+		              : "0";
+		    progressTitle.innerHTML = `处理进度   ${sign}`;
+		}
+		
 		// ==================== 上传处理 ====================
 		function handleFiles(files) {
 		    if (isProcessing) return;
 		
-		    // 释放旧资源
 		    for (const item of currentImages) {
 		        URL.revokeObjectURL(item.url);
 		    }
@@ -750,6 +741,7 @@
 		    selectedFiles.textContent = "未选择文件";
 		    progressFill.style.width = "0%";
 		    progressText.textContent = "0 / 0 已完成";
+		    resetButtonsAfterUpload();
 		
 		    const imageFiles = Array.from(files).filter((file) =>
 		        file.type.startsWith("image/"),
@@ -757,7 +749,6 @@
 		    if (imageFiles.length === 0) return;
 		
 		    selectedFiles.textContent = `已选择 ${imageFiles.length} 个文件`;
-		    resetButtonsAfterUpload();
 		
 		    let loadedCount = 0;
 		    imageFiles.forEach((file, idx) => {
@@ -765,18 +756,16 @@
 		        const img = new Image();
 		        img.onload = () => {
 		            currentImages.push({ image: img, url: url });
-		            // 创建预览网格元素
 		            const imageItem = document.createElement("div");
 		            imageItem.className = "image-item";
 		            imageItem.innerHTML = `
-			                        <img class="image-preview" src="${url}" alt="${file.name}">
-			                        <div class="image-name">${file.name}</div>
-			                        <div class="image-status" data-index="${idx}">等待处理</div>
-					    `;
+												                    <img class="image-preview" src="${url}" alt="${file.name}">
+														                        <div class="image-name">${file.name}</div>
+																	                    <div class="image-status" data-index="${idx}">等待处理</div>
+																			                    `;
 		            imageGrid.appendChild(imageItem);
 		            loadedCount++;
 		            if (loadedCount === imageFiles.length) {
-		                // 所有图片加载完成，可以启用处理按钮
 		                encryptBtn.disabled = false;
 		                decryptBtn.disabled = false;
 		            }
@@ -790,12 +779,16 @@
 		    });
 		}
 		
-		// ==================== 批量处理（支持叠加） ====================
+		// ==================== 批量处理 ====================
 		async function batchProcess(mode) {
 		    if (currentImages.length === 0 || isProcessing) return;
 		
 		    isProcessing = true;
-		    setButtonsEnabled(false); // 禁用所有按钮
+		    setButtonsEnabled(false);
+		
+		    // 更新净次数
+		    netCount += mode === "encrypt" ? 1 : -1;
+		    updateNetCountDisplay();
 		
 		    const total = currentImages.length;
 		    let completed = 0;
@@ -813,27 +806,19 @@
 		        }
 		
 		        try {
-		            // 调用加密或解密，传入当前图片对象
 		            const processFunc =
 		                mode === "encrypt" ? encrypt : decrypt;
 		            const newUrl = await processFunc(item.image);
-		
-		            // 将新 URL 加载为 Image 对象
 		            const newImg = await loadImageFromUrl(newUrl);
 		
-		            // 更新预览（使用新 URL）
 		            const previewImg = document.querySelector(
 		                `.image-item:nth-child(${i + 1}) .image-preview`,
 		            );
 		            if (previewImg) previewImg.src = newUrl;
 		
-		            // 释放旧 URL
 		            URL.revokeObjectURL(oldUrl);
-		
-		            // 替换数据结构
 		            currentImages[i] = { image: newImg, url: newUrl };
 		
-		            // 更新状态文字
 		            if (statusEl) {
 		                statusEl.textContent =
 		                    mode === "encrypt" ? "已混淆" : "已解混淆";
@@ -849,29 +834,31 @@
 		
 		        completed++;
 		        updateProgress(completed, total);
-		        await new Promise((resolve) => setTimeout(resolve, 10)); // 微小延迟，避免 UI 阻塞
+		        await new Promise((resolve) => setTimeout(resolve, 10));
 		    }
 		
 		    isProcessing = false;
 		    enableButtonsAfterProcess();
 		}
 		
-		// 绑定处理按钮事件
 		encryptBtn.addEventListener("click", () => batchProcess("encrypt"));
 		decryptBtn.addEventListener("click", () => batchProcess("decrypt"));
 		
-		// ==================== 保存功能 ====================
-		// 所有另存为（优先文件夹选择，否则 ZIP）
+		// ==================== 保存 ====================
+		// 所有另存为
 		saveAsBtn.addEventListener("click", async function () {
 		    if (currentImages.length === 0) return;
 		
-		    // 尝试使用文件夹选择 API
+		    // 生成带净次数的文件名后缀
+		    let countSuffix = "";
+		    if (netCount > 0) countSuffix = `__p${netCount}`;
+		    else if (netCount < 0) countSuffix = `__n${-netCount}`;
+		
 		    if (window.showDirectoryPicker) {
 		        let dirHandle;
 		        try {
 		            dirHandle = await window.showDirectoryPicker();
 		        } catch (err) {
-		            // 用户取消或浏览器不支持，回退到 ZIP
 		            return;
 		        }
 		
@@ -882,7 +869,7 @@
 		                    `.image-item:nth-child(${i + 1}) .image-name`,
 		                )?.textContent || `image_${i + 1}`;
 		            const baseName = originalName.replace(/\.[^/.]+$/, "");
-		            const fileName = `${baseName}_${i + 1}.jpg`;
+		            const fileName = `${baseName}${countSuffix}.jpg`;
 		            try {
 		                const response = await fetch(item.url);
 		                const blob = await response.blob();
@@ -917,7 +904,7 @@
 		        return;
 		    }
 		
-		    // 不支持文件夹选择，打包 ZIP
+		    // 打包 ZIP
 		    const zip = new JSZip();
 		    const folder = zip.folder("混淆图片");
 		
@@ -928,7 +915,7 @@
 		                `.image-item:nth-child(${i + 1}) .image-name`,
 		            )?.textContent || `image_${i + 1}`;
 		        const baseName = originalName.replace(/\.[^/.]+$/, "");
-		        const fileName = `${baseName}_${i + 1}.jpg`;
+		        const fileName = `${baseName}${countSuffix}.jpg`;
 		        try {
 		            const response = await fetch(item.url);
 		            const blob = await response.blob();
@@ -954,7 +941,6 @@
 		            const writable = await handle.createWritable();
 		            await writable.write(zipBlob);
 		            await writable.close();
-		            // 标记所有图片状态为“已保存”
 		            for (let i = 0; i < currentImages.length; i++) {
 		                const statusEl = document.querySelector(
 		                    `.image-status[data-index="${i}"]`,
@@ -965,12 +951,9 @@
 		                }
 		            }
 		            return;
-		        } catch (err) {
-		            // 用户取消，继续普通下载
-		        }
+		        } catch (err) {}
 		    }
 		
-		    // 普通 ZIP 下载
 		    const link = document.createElement("a");
 		    link.href = URL.createObjectURL(zipBlob);
 		    link.download = `混淆图片_${new Date().getTime()}.zip`;
@@ -984,6 +967,10 @@
 		downloadBtn.addEventListener("click", async function () {
 		    if (currentImages.length === 0) return;
 		
+		    let countSuffix = "";
+		    if (netCount > 0) countSuffix = `__p${netCount}`;
+		    else if (netCount < 0) countSuffix = `__n${-netCount}`;
+		
 		    for (let i = 0; i < currentImages.length; i++) {
 		        const item = currentImages[i];
 		        const originalName =
@@ -991,7 +978,7 @@
 		                `.image-item:nth-child(${i + 1}) .image-name`,
 		            )?.textContent || `image_${i + 1}`;
 		        const baseName = originalName.replace(/\.[^/.]+$/, "");
-		        const fileName = `${baseName}_${i + 1}.jpg`;
+		        const fileName = `${baseName}${countSuffix}.jpg`;
 		        try {
 		            const response = await fetch(item.url);
 		            const blob = await response.blob();
@@ -1023,44 +1010,37 @@
 		    }
 		});
 		
-		// ==================== 拖拽上传 ====================
+		// ==================== 拖拽上传、折叠、大图预览 ====================
 		uploadSection.addEventListener("dragover", (e) => {
 		    e.preventDefault();
-		    e.stopPropagation();
 		    uploadSection.classList.add("dragover");
 		});
 		uploadSection.addEventListener("dragleave", (e) => {
 		    e.preventDefault();
-		    e.stopPropagation();
 		    uploadSection.classList.remove("dragover");
 		});
 		uploadSection.addEventListener("drop", (e) => {
 		    e.preventDefault();
-		    e.stopPropagation();
 		    uploadSection.classList.remove("dragover");
 		    handleFiles(e.dataTransfer.files);
 		});
-		
-		// 文件选择
 		fileInput.addEventListener("change", (e) =>
 		    handleFiles(e.target.files),
 		);
-		
-		// ==================== 折叠说明 ====================
 		infoTitle.addEventListener("click", () => {
 		    infoTitle.classList.toggle("collapsed");
 		    infoContent.classList.toggle("collapsed");
 		});
 		
-		// ==================== 大图预览与切换（不变） ====================
+		// 大图预览
 		const modal = document.getElementById("previewModal");
 		const modalImg = document.getElementById("modalImage");
 		const closeModal = document.getElementById("closeModal");
 		const prevBtn = document.getElementById("prevImage");
 		const nextBtn = document.getElementById("nextImage");
 		
-		let currentIndex = -1;
-		let touchStartX = 0;
+		let currentIndex = -1,
+		    touchStartX = 0;
 		
 		function getPreviewImages() {
 		    return Array.from(document.querySelectorAll(".image-preview"));
